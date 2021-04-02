@@ -11,6 +11,12 @@ const morgan = require('morgan');
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
 
+
+console.log(process.env.NODE_ENV);
+
+const MONGODB_URI =
+`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.uwya5.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?retryWrites=true`
+
 const app = express();
 
 const fileStorage = multer.diskStorage({
@@ -33,14 +39,8 @@ const fileFilter = (req, file, cb) => {
     cb(null, false);
   }
 };
-
-
-const accessLogStream = fs.createWriteStream(
-  path.join(__dirname,'access.log'), { flags:'a'}
-  );
 app.use(helmet());
 app.use(compression());
-app.use(morgan('combined', { stream: accessLogStream }));
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
@@ -72,9 +72,7 @@ app.use((error, req, res, next) => {
 
  
   mongoose
-  .connect(
-    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.uwya5.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?retryWrites=true`
-  )
+  .connect(MONGODB_URI)
   .then(result => {
     app.listen(process.env.PORT || 3000);
   })
