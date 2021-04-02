@@ -4,6 +4,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
 
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
@@ -30,6 +33,14 @@ const fileFilter = (req, file, cb) => {
     cb(null, false);
   }
 };
+
+
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname,'access.log'), { flags:'a'}
+  );
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined', { stream: accessLogStream }));
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
@@ -59,15 +70,14 @@ app.use((error, req, res, next) => {
   res.status(status).json({ message: message, data: data });
 });
 
-mongoose
+ 
+  mongoose
   .connect(
-    'mongodb+srv://JeanPaul:dusabimana2019@cluster0.uwya5.mongodb.net/Messageapp?retryWrites=true'
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.uwya5.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?retryWrites=true`
   )
   .then(result => {
-    const server = app.listen(8080);
-    const io = require('./socket.io').init(server);
-    io.on('connection', socket => {
-      console.log('Client connected');
-    });
+    app.listen(process.env.PORT || 3000);
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    console.log(err);
+  });

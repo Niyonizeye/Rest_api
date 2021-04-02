@@ -1,0 +1,7 @@
+{
+    "env": {
+        "MONGO_USER": "JeanPaul",
+        "MONGO_PASSWORD": "dusabimana2019",
+        "MONGO_DEFAULT_DATABASE": "Messageapp"
+    }
+}
